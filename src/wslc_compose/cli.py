@@ -89,13 +89,13 @@ def _project_containers(project: Project) -> List[dict]:
     entries = engine.list_project_containers(project.name)
     enriched = []
     for entry in entries:
-        data = engine.inspect(entry.get("Id") or entry.get("Name")) or {}
+        data = engine.inspect(entry.get("Id") or entry.get("ID") or entry.get("Name") or entry.get("Names")) or {}
         labels = data.get("Labels") or {}
         state = data.get("State") or {}
         enriched.append(
             {
-                "id": entry.get("Id"),
-                "name": entry.get("Name") or data.get("Name"),
+                "id": entry.get("Id") or entry.get("ID"),
+                "name": entry.get("Name") or entry.get("Names") or data.get("Name"),
                 "image": entry.get("Image") or data.get("Image"),
                 "service": labels.get(LABEL_SERVICE, ""),
                 "index": int(labels.get(LABEL_INDEX, "1") or 1),
@@ -291,6 +291,7 @@ def _follow_logs(
     tail: Optional[int] = None,
     timestamps: bool = False,
 ) -> int:
+    print(service_names)
     containers = [
         c
         for c in _project_containers(project)

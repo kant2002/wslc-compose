@@ -282,7 +282,15 @@ def _parse_build(value, project_dir: str) -> BuildConfig:
         target=value.get("target"),
         pull=bool(value.get("pull", False)),
     )
-
+    
+def merge(services_definition, include_definition):
+    if isinstance(services_definition,dict) and isinstance(include_definition,dict):
+        for k,v in include_definition.items():
+            if k not in services_definition:
+                services_definition[k] = v
+            else:
+                services_definition[k] = merge(services_definition[k],v)
+    return services_definition
 
 def load_project(
     compose_file: str,
@@ -298,6 +306,19 @@ def load_project(
 
     with open(compose_file, encoding="utf-8") as fh:
         raw = yaml.safe_load(fh)
+        
+    # --resolve include files
+    raw_include = raw.get("include")
+    if not raw_include is None:
+        raw.pop("include")
+    else:
+        raw_include = []
+    for cfg in raw_include:
+        if not isinstance(cfg, str):
+            raise ComposeError(f"{compose_file}: malformed 'includes' section")
+        with open(cfg, encoding="utf-8") as ifh:
+            raw_include_content = yaml.safe_load(ifh)
+            merge(raw, raw_include_content)
     if not isinstance(raw, dict) or "services" not in raw:
         raise ComposeError(f"{compose_file}: no 'services' section found")
     raw = interpolate_tree(raw, env)

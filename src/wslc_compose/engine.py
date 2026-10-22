@@ -153,7 +153,7 @@ def capture_json(args: List[str]):
     if not text:
         return []
     try:
-        return json.loads(text)
+        return [json.loads(text_) for text_ in text.split('\n')]
     except json.JSONDecodeError as exc:
         raise WslcError(f"unexpected non-JSON output from wslc {' '.join(args)}: {exc}")
 
