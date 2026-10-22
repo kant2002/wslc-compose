@@ -27,7 +27,6 @@ Issues = "https://github.com/bacarndiaye/wslc-compose/issues"
 
 [project.scripts]
 wslc-compose = "wslc_compose.cli:main"
-wslc = "wslc_compose.shim:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/wslc_compose"]
